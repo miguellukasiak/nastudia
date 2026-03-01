@@ -1,3 +1,5 @@
+const FORMSPREE_URL = "https://formspree.io/f/meelwnpa";
+
 const contentData = {
     student: {
         heroSubtitle: "zamiast zakuwania",
@@ -374,7 +376,7 @@ const contentData = {
     }
 };
 
-// --- NOWOŚĆ: GLOBALNA FUNKCJA FORMULARZA ---
+// --- GLOBALNA FUNKCJA FORMULARZA DLA UCZNIA ---
 window.submitAntiForm = function() {
     const handleInput = document.getElementById('contact-handle');
     const handle = handleInput ? handleInput.value : '';
@@ -391,45 +393,58 @@ window.submitAntiForm = function() {
     const terminal = document.getElementById('success-terminal');
     const typingLines = terminal.querySelectorAll('.typing-text');
 
-    // 1. Zabezpieczenie przed double-clikiem (Stan "wczytywania")
+    // 1. Zabezpieczenie przycisku
     btn.disabled = true;
     btn.textContent = "HACKING IN PROGRESS...";
     btn.style.opacity = "0.5";
     btn.style.pointerEvents = "none";
 
-    // 2. Symulacja przetwarzania i "implozja" formularza
+    // 2. Zbieranie danych
+    const skill = document.querySelector('input[name="skill"]:checked');
+    const status = document.querySelector('input[name="status"]:checked');
+    
+    const formData = {
+        Zgloszenie: "UCZEŃ 🎓",
+        Klasa_Postaci: skill ? skill.value : "Nie wybrano",
+        Status_Misji: status ? status.value : "Nie wybrano",
+        Kontakt: handle
+    };
+
+    // 3. Wysyłka do Formspree w tle
+    fetch(FORMSPREE_URL, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    }).then(response => {
+        if (response.ok) {
+            console.log("Dane wysłane do Formspree!");
+        } else {
+            console.error("Błąd wysyłki do Formspree.");
+        }
+    }).catch(error => console.error("Błąd sieci:", error));
+
+    // 4. Odpalenie animacji (niezależnie od tego, jak szybko serwer odpowie, robimy show)
     setTimeout(() => {
-        // Ukrywamy stare kroki
         allSteps.forEach(step => step.style.display = 'none');
         btn.style.display = 'none';
 
-        // Pozbywamy się obramowań i tła kontenera, żeby terminal przejął całe miejsce
         container.style.padding = '0';
         container.style.background = 'transparent';
         container.style.border = 'none';
         container.style.boxShadow = 'none';
 
-        // 3. Wyświetlenie terminala
         terminal.classList.add('show-terminal');
 
-        // 4. Odpalenie animacji CSS "pisania tekstu"
         typingLines.forEach(line => {
             line.classList.add('type-animation');
         });
-
-        // (Opcjonalnie) Zbieramy dane do wysyłki na backend
-        const skill = document.querySelector('input[name="skill"]:checked');
-        const status = document.querySelector('input[name="status"]:checked');
-        console.log("Zebrane dane wywiadowcze:", {
-            skill: skill ? skill.value : "Nie wybrano",
-            status: status ? status.value : "Nie wybrano",
-            contact: handle
-        });
-
-    }, 800); // Czas trzymania w napięciu (0.8s)
+    }, 800);
 };
 
-// --- NOWOŚĆ: GLOBALNA FUNKCJA FORMULARZA DLA RODZICA ---
+// --- GLOBALNA FUNKCJA FORMULARZA DLA RODZICA ---
 window.submitParentForm = function() {
     const contactInput = document.getElementById('parent-contact-info');
     const nameInput = document.getElementById('parent-name');
@@ -455,9 +470,34 @@ window.submitParentForm = function() {
     btn.style.opacity = "0.8";
     btn.style.pointerEvents = "none";
 
-    // 2. Eleganckie zniknięcie formularza i pojawienie się potwierdzenia
+    // 2. Zbieranie danych
+    const status = document.querySelector('input[name="parent-status"]:checked');
+    
+    const formData = {
+        Zgloszenie: "RODZIC 👔",
+        Główny_Cel: status ? status.value : "Nie wybrano",
+        Imie_i_Nazwisko: name,
+        Kontakt: contact
+    };
+
+    // 3. Wysyłka do Formspree w tle
+    fetch(FORMSPREE_URL, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    }).then(response => {
+        if (response.ok) {
+            console.log("Dane rodzica wysłane do Formspree!");
+        } else {
+            console.error("Błąd wysyłki do Formspree.");
+        }
+    }).catch(error => console.error("Błąd sieci:", error));
+
+    // 4. Eleganckie zniknięcie formularza i pojawienie się potwierdzenia
     setTimeout(() => {
-        // Płynne ukrycie
         allSteps.forEach(step => {
             step.style.opacity = '0';
             setTimeout(() => step.style.display = 'none', 300);
@@ -466,24 +506,12 @@ window.submitParentForm = function() {
         btn.style.opacity = '0';
         setTimeout(() => btn.style.display = 'none', 300);
 
-        // Po chwili (kiedy stare elementy znikną) pokazujemy kartę sukcesu
         setTimeout(() => {
-            // Dodajemy klasę, która odpala animację fade-in i slide-up
             successCard.classList.add('show-card');
         }, 350);
-
-        // (Opcjonalnie) Zbieramy dane do wysyłki na backend
-        const status = document.querySelector('input[name="parent-status"]:checked');
-        console.log("Wniosek od rodzica:", {
-            cel: status ? status.value : "Nie wybrano",
-            imie: name,
-            kontakt: contact
-        });
-
-    }, 800); // 0.8 sekundy sprawia wrażenie solidnego, systemowego przetwarzania danych
+    }, 800);
 };
 
-// Reszta kodu z nasłuchiwaniem...
 document.addEventListener('DOMContentLoaded', () => {
     const radios = document.querySelectorAll('input[name="user-role"]');
     const heroTextWrapper = document.getElementById('hero-text-wrapper');
