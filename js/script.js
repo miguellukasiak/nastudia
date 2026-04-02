@@ -164,9 +164,23 @@ const contentData = {
 
                         <div class="form-step final-step">
                             <h3 class="step-title">3. Gdzie mamy Cię pingnąć?</h3>
+                            <div class="chip-group" style="margin-bottom: 15px;">
+                                <label class="chip">
+                                    <input type="radio" name="contact-platform" value="Discord">
+                                    <span class="chip-label">Discord</span>
+                                </label>
+                                <label class="chip">
+                                    <input type="radio" name="contact-platform" value="Instagram">
+                                    <span class="chip-label">Instagram</span>
+                                </label>
+                                <label class="chip">
+                                    <input type="radio" name="contact-platform" value="E-mail">
+                                    <span class="chip-label">E-mail</span>
+                                </label>
+                            </div>
                             <div class="input-wrapper">
-                                <span class="input-icon">@</span>
-                                <input type="text" id="contact-handle" placeholder="Twój Discord, Instagram lub E-mail" autocomplete="off">
+                                <span class="input-icon">👉</span>
+                                <input type="text" id="contact-handle" placeholder="Wpisz tutaj swój nick lub adres" autocomplete="off">
                             </div>
                         </div>
 
@@ -378,11 +392,26 @@ const contentData = {
 
 // --- GLOBALNA FUNKCJA FORMULARZA DLA UCZNIA ---
 window.submitAntiForm = function() {
+    const skill = document.querySelector('input[name="skill"]:checked');
+    const status = document.querySelector('input[name="status"]:checked');
+    const platform = document.querySelector('input[name="contact-platform"]:checked');
+    
+    // Walidacja pigułek ucznia
+    if (!skill || !status) {
+        alert("Wybierz opcje w krokach 1 i 2, żebyśmy wiedzieli z kim gramy! 🚀");
+        return;
+    }
+
+    if (!platform) {
+        alert("Wybierz platformę, na której mamy Cię złapać (krok 3)! 📱");
+        return;
+    }
+
     const handleInput = document.getElementById('contact-handle');
     const handle = handleInput ? handleInput.value : '';
 
     if (!handle.trim()) {
-        alert("Ziomek, zostaw chociaż jakiś namiar na siebie! 😅");
+        alert("Ziomek, zostaw dokładny namiar na swój " + platform.value + "! 😅");
         if(handleInput) handleInput.focus();
         return;
     }
@@ -400,14 +429,11 @@ window.submitAntiForm = function() {
     btn.style.pointerEvents = "none";
 
     // 2. Zbieranie danych
-    const skill = document.querySelector('input[name="skill"]:checked');
-    const status = document.querySelector('input[name="status"]:checked');
-    
     const formData = {
         Zgloszenie: "UCZEŃ 🎓",
-        Klasa_Postaci: skill ? skill.value : "Nie wybrano",
-        Status_Misji: status ? status.value : "Nie wybrano",
-        Kontakt: handle
+        Klasa_Postaci: skill.value,
+        Status_Misji: status.value,
+        Kontakt: platform.value + ": " + handle
     };
 
     // 3. Wysyłka do Formspree w tle
@@ -446,6 +472,13 @@ window.submitAntiForm = function() {
 
 // --- GLOBALNA FUNKCJA FORMULARZA DLA RODZICA ---
 window.submitParentForm = function() {
+    // Walidacja pigułki rodzica
+    const status = document.querySelector('input[name="parent-status"]:checked');
+    if (!status) {
+        alert("Szanowni Państwo, prosimy o zaznaczenie głównego celu w kroku 1.");
+        return;
+    }
+
     const contactInput = document.getElementById('parent-contact-info');
     const nameInput = document.getElementById('parent-name');
     
@@ -469,13 +502,11 @@ window.submitParentForm = function() {
     btn.innerHTML = '<span class="pulse-dot" style="display:inline-block; margin-right: 10px;"></span> Przetwarzanie...';
     btn.style.opacity = "0.8";
     btn.style.pointerEvents = "none";
-
-    // 2. Zbieranie danych
-    const status = document.querySelector('input[name="parent-status"]:checked');
     
+    // 2. Zbieranie danych
     const formData = {
         Zgloszenie: "RODZIC 👔",
-        Główny_Cel: status ? status.value : "Nie wybrano",
+        Główny_Cel: status.value,
         Imie_i_Nazwisko: name,
         Kontakt: contact
     };
